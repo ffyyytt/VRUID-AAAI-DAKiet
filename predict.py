@@ -210,6 +210,7 @@ model.load_state_dict(torch.load(f"{args.modelpath}/{args.category}.pth", map_lo
 if torch.cuda.device_count() > 1:
     text_model = torch.nn.DataParallel(text_model)
     image_model = torch.nn.DataParallel(image_model)
+    model = torch.nn.DataParallel(model)
 scaler = torch.amp.GradScaler(enabled=True)
 
 model.eval()
@@ -235,7 +236,7 @@ for batch in pbar:
     parent_metadata = batch["parent_metadata"][0].to(device)
     with torch.autocast(device_type="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float16, enabled=True):
         features_c, features_p = model(child_images, parent_images, child_texts, parent_texts, child_metadata, parent_metadata)
-        output = torch.nn.functional.linear(torch.nn.functional.normalize(features_c), torch.nn.functional.normalize(features_p))
+        output = torch.nn.functional.linear(torch.nn.functional.normalize(features_c).detach().cpu(), torch.nn.functional.normalize(features_p).detach().cpu())
         child_ids.append( batch["child_ids"] )
         parent_ids.append( batch["parent_ids"] )
         predictions.append(output.detach().cpu().numpy())
