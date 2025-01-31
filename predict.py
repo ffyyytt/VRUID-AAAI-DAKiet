@@ -25,7 +25,7 @@ parser.add_argument("-modelpath", help="Path to dataset", nargs='?', type=str, d
 parser.add_argument("-device", help="Path to dataset", nargs='?', type=str, default="cuda")
 args = parser.parse_args()
 
-max_length = 128
+max_length = 64
 if args.category == "table":
     args.child_category = "table_caption" 
     args.parent_category = ["table"]
