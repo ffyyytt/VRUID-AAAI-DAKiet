@@ -59,6 +59,10 @@ class TestDataset(torch.utils.data.Dataset):
                                                          torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
         
     def __len__(self):
+        r = 0
+        for idx in range(len(self.data.keys())):
+            r += len([ self.data[self.filename[idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[idx]]["components"])) if self.data[self.filename[idx]]["components"][i]["category"] == args.child_category ])
+            
         return len(self.data.keys())
 
     def get_text(self, obj):
@@ -73,12 +77,12 @@ class TestDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         true_idx = 0
-        c = [ self.data[name]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ]
+        c = [ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ]
         while idx > c:
             true_idx += 1
-            c += [ self.data[name]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ]
+            c += [ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ]
 
-        child_ids = [ [ self.data[name]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ][-c + idx] ]
+        child_ids = [ [ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ][-c + idx] ]
         return self.get(true_idx, child_ids)
     
     def get(self, idx, child_ids):
