@@ -25,7 +25,7 @@ parser.add_argument("-modelpath", help="Path to dataset", nargs='?', type=str, d
 parser.add_argument("-device", help="Path to dataset", nargs='?', type=str, default="cuda")
 args = parser.parse_args()
 
-max_length = 48
+max_length = 32
 if args.category == "table":
     args.child_category = "table_caption" 
     args.parent_category = ["table"]
@@ -38,7 +38,7 @@ elif args.category == "form":
 elif args.category == "list":
     args.child_category = "list"
     args.parent_category = ["paragraph", "section", "subsection", "subsubsection", "subsubsubsection"]
-    max_length = 48
+    max_length = 32
 elif args.category == "form_body":
     args.child_category = "form_body"
     args.parent_category = ["form_title", "summary", "abstract", "section", "subsection", "subsubsection", "subsubsubsection"]
