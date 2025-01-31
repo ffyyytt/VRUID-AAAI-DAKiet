@@ -59,7 +59,11 @@ class TestDataset(torch.utils.data.Dataset):
                                                          torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
         
     def __len__(self):
-        return len(self.data.keys())
+        r = 0
+        for idx in range(len(self.data.keys())):
+            r += len([ self.data[self.filename[idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[idx]]["components"])) if self.data[self.filename[idx]]["components"][i]["category"] == args.child_category ])
+            
+        return r
 
     def get_text(self, obj):
         text = ""
@@ -72,8 +76,17 @@ class TestDataset(torch.utils.data.Dataset):
         return text
 
     def __getitem__(self, idx):
+        true_idx = 0
+        c = len([ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ])
+        while idx > c:
+            true_idx += 1
+            c += len([ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ])
+
+        child_ids = [ [ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ][-c + idx] ]
+        return self.get(true_idx, child_ids)
+    
+    def get(self, idx, child_ids):
         name = self.filename[idx]
-        child_ids = [ self.data[name]["components"][i]["object_id"] for i in range(len(self.data[name]["components"])) if self.data[name]["components"][i]["category"] == args.child_category ]
         parent_ids = [ self.data[name]["components"][i]["object_id"] for i in range(len(self.data[name]["components"])) if self.data[name]["components"][i]["category"] in args.parent_category ] + [-1]
         child_texts = [""]*len(child_ids)
         parent_texts = [""]*len(parent_ids)
@@ -194,15 +207,17 @@ text_model = BartModel.from_pretrained("facebook/bart-large").to(device)
 
 model = ModelFactory(image_model, text_model).to(device)
 model.load_state_dict(torch.load(f"{args.modelpath}/{args.category}.pth", map_location=device).state_dict())
+if torch.cuda.device_count() > 1:
+    model = torch.nn.DataParallel(model)
 scaler = torch.amp.GradScaler(enabled=True)
 
+gc.collect()
 model.eval()
 pbar = tqdm(test_dataset)
 predictions = []
 child_ids = []
 parent_ids = []
 for batch in pbar:
-    gc.collect()
     if len(batch["child_ids"]) == 0:
         child_ids.append( batch["child_ids"] )
         parent_ids.append( batch["parent_ids"] )
