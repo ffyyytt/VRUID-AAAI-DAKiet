@@ -21,6 +21,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 parser = argparse.ArgumentParser("VRUID")
 parser.add_argument("-category", help="YAML file", nargs='?', type=str, default="figure")
 parser.add_argument("-datapath", help="Path to dataset", nargs='?', type=str, default="/kaggle/input/aaai-25-visually-rich-document-vrd-iu-leaderboard")
+parser.add_argument("-modelpath", help="Path to dataset", nargs='?', type=str, default="/kaggle/input/vruid-aaai-dakiet/pytorch/figure/2")
 args = parser.parse_args()
 
 if not os.path.exists(args.category):
@@ -197,38 +198,35 @@ tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
 text_model = BartModel.from_pretrained("facebook/bart-large").to(device)
 
 model = ModelFactory(image_model, text_model).to(device)
-model.load_state_dict(torch.load(f"{args.category}.pth").state_dict())
+model.load_state_dict(torch.load(f"{args.modelpath}/{args.category}.pth").state_dict())
 scaler = torch.amp.GradScaler(enabled=True)
 
+gc.collect()
+model.eval()
+pbar = tqdm(test_dataset)
+predictions = []
+child_ids = []
+parent_ids = []
+for batch in pbar:
+    if len(batch["child_ids"]) == 0:
+        child_ids.append( batch["child_ids"] )
+        parent_ids.append( batch["parent_ids"] )
+        predictions.append( [] )
+        continue
+    child_texts = tokenizer([x[0] for x in batch["child_texts"]], return_tensors="pt", padding="max_length", max_length=max_length, truncation=True)
+    parent_texts = tokenizer([x[0] for x in batch["parent_texts"]], return_tensors="pt", padding="max_length", max_length=max_length, truncation=True)
+    for k in child_texts :
+        child_texts[k] = child_texts[k].to(device)
+        parent_texts[k] = parent_texts[k].to(device)
+    child_images = batch["child_images"][0].to(device)
+    parent_images = batch["parent_images"][0].to(device)
+    child_metadata = batch["child_metadata"][0].to(device)
+    parent_metadata = batch["parent_metadata"][0].to(device)
+    with torch.autocast(device_type="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float16, enabled=True):
+        output, _ = model(child_images, parent_images, child_texts, parent_texts, child_metadata, parent_metadata)
+        child_ids.append( batch["child_ids"] )
+        parent_ids.append( batch["parent_ids"] )
+        predictions.append(output.detach().cpu().numpy())
 
-for epoch in range(100):
-    gc.collect()
-    model.eval()
-    pbar = tqdm(test_dataset)
-    predictions = []
-    child_ids = []
-    parent_ids = []
-    for batch in pbar:
-        if len(batch["child_ids"]) == 0:
-            child_ids.append( batch["child_ids"] )
-            parent_ids.append( batch["parent_ids"] )
-            predictions.append( [] )
-            continue
-        child_texts = tokenizer([x[0] for x in batch["child_texts"]], return_tensors="pt", padding="max_length", max_length=max_length, truncation=True)
-        parent_texts = tokenizer([x[0] for x in batch["parent_texts"]], return_tensors="pt", padding="max_length", max_length=max_length, truncation=True)
-        for k in child_texts :
-            child_texts[k] = child_texts[k].to(device)
-            parent_texts[k] = parent_texts[k].to(device)
-        child_images = batch["child_images"][0].to(device)
-        parent_images = batch["parent_images"][0].to(device)
-        child_metadata = batch["child_metadata"][0].to(device)
-        parent_metadata = batch["parent_metadata"][0].to(device)
-        with torch.autocast(device_type="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float16, enabled=True):
-            output, _ = model(child_images, parent_images, child_texts, parent_texts, child_metadata, parent_metadata)
-            child_ids.append( batch["child_ids"] )
-            parent_ids.append( batch["parent_ids"] )
-            predictions.append(output.detach().cpu().numpy())
-
-    torch.save(model, f"{args.category}.pth")
-    with open(f'{args.category}/output_{500+epoch}.pickle', 'wb') as handle:
-        pickle.dump([child_ids, parent_ids, predictions], handle, protocol=pickle.HIGHEST_PROTOCOL)
+with open(f'output_{args.category}.pickle', 'wb') as handle:
+    pickle.dump([child_ids, parent_ids, predictions], handle, protocol=pickle.HIGHEST_PROTOCOL)
