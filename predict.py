@@ -208,8 +208,7 @@ text_model = BartModel.from_pretrained("facebook/bart-large").to(device)
 model = ModelFactory(image_model, text_model).to(device)
 model.load_state_dict(torch.load(f"{args.modelpath}/{args.category}.pth", map_location=device).state_dict())
 if torch.cuda.device_count() > 1:
-    image_model = torch.nn.DataParallel(image_model)
-    text_model = torch.nn.DataParallel(text_model)
+    model = torch.nn.DataParallel(model)
 scaler = torch.amp.GradScaler(enabled=True)
 
 gc.collect()
