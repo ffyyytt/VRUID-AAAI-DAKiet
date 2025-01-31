@@ -195,8 +195,8 @@ class ModelFactory(torch.nn.Module):
         features_c = self.linear_header_c(child_features)
         features_p = self.linear_header_p(parent_features)
         
-        logits = self.cosine(features_c, features_p, labels)
-        return logits
+        # logits = self.cosine(features_c, features_p, labels)
+        return features_c, features_p
     
 test_dataset = torch.utils.data.DataLoader(TestDataset(test_data), batch_size=1, shuffle=False, num_workers=16)
 device = torch.device(args.device)
@@ -234,7 +234,8 @@ for batch in pbar:
     child_metadata = batch["child_metadata"][0].to(device)
     parent_metadata = batch["parent_metadata"][0].to(device)
     with torch.autocast(device_type="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float16, enabled=True):
-        output, _ = model(child_images, parent_images, child_texts, parent_texts, child_metadata, parent_metadata)
+        features_c, features_p = model(child_images, parent_images, child_texts, parent_texts, child_metadata, parent_metadata)
+        output = torch.nn.functional.linear(torch.nn.functional.normalize(features_c), torch.nn.functional.normalize(features_p))
         child_ids.append( batch["child_ids"] )
         parent_ids.append( batch["parent_ids"] )
         predictions.append(output.detach().cpu().numpy())
