@@ -63,7 +63,7 @@ class TestDataset(torch.utils.data.Dataset):
         for idx in range(len(self.data.keys())):
             r += len([ self.data[self.filename[idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[idx]]["components"])) if self.data[self.filename[idx]]["components"][i]["category"] == args.child_category ])
             
-        return len(self.data.keys())
+        return r
 
     def get_text(self, obj):
         text = ""
@@ -77,10 +77,10 @@ class TestDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         true_idx = 0
-        c = [ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ]
+        c = len([ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ])
         while idx > c:
             true_idx += 1
-            c += [ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ]
+            c += len([ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ])
 
         child_ids = [ [ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ][-c + idx] ]
         return self.get(true_idx, child_ids)
