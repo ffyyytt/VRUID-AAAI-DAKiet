@@ -117,9 +117,6 @@ class TestDataset(torch.utils.data.Dataset):
                                                                                                     self.data[name]["components"][i]["category_id"]
                                                                                                    ]
                 parent_images[parent_ids.index(self.data[name]["components"][i]["object_id"])] = self.transform(self.augmentation(image=object_img)['image'])
-
-        if len(labels) == 0:
-            return self.__getitem__(random.randrange(len(self.filename)))
         
         return {
             "child_ids": child_ids,
