@@ -78,7 +78,7 @@ class TestDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         true_idx = 0
         c = len([ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ])
-        while idx > c:
+        while idx >= c:
             true_idx += 1
             c += len([ self.data[self.filename[true_idx]]["components"][i]["object_id"] for i in range(len(self.data[self.filename[true_idx]]["components"])) if self.data[self.filename[true_idx]]["components"][i]["category"] == args.child_category ])
 
