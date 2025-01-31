@@ -211,13 +211,13 @@ if torch.cuda.device_count() > 1:
     model = torch.nn.DataParallel(model)
 scaler = torch.amp.GradScaler(enabled=True)
 
-gc.collect()
 model.eval()
 pbar = tqdm(test_dataset)
 predictions = []
 child_ids = []
 parent_ids = []
 for batch in pbar:
+    gc.collect()
     if len(batch["child_ids"]) == 0:
         child_ids.append( batch["child_ids"] )
         parent_ids.append( batch["parent_ids"] )
