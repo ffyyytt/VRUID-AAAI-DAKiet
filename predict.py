@@ -196,13 +196,13 @@ model = ModelFactory(image_model, text_model).to(device)
 model.load_state_dict(torch.load(f"{args.modelpath}/{args.category}.pth", map_location=device).state_dict())
 scaler = torch.amp.GradScaler(enabled=True)
 
-gc.collect()
 model.eval()
 pbar = tqdm(test_dataset)
 predictions = []
 child_ids = []
 parent_ids = []
 for batch in pbar:
+    gc.collect()
     if len(batch["child_ids"]) == 0:
         child_ids.append( batch["child_ids"] )
         parent_ids.append( batch["parent_ids"] )
