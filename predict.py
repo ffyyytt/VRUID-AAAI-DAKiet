@@ -20,6 +20,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 
 parser = argparse.ArgumentParser("VRUID")
 parser.add_argument("-category", help="YAML file", nargs='?', type=str, default="figure")
+parser.add_argument("-datapath", help="Path to dataset", nargs='?', type=str, default="/kaggle/input/aaai-25-visually-rich-document-vrd-iu-leaderboard")
 args = parser.parse_args()
 
 if not os.path.exists(args.category):
@@ -45,7 +46,7 @@ elif args.category == "form_body":
 
 
 
-test_data = pickle.load(open("dataset/val_data.pkl", "rb")) | pickle.load(open("dataset/test_data.pkl", "rb"))
+test_data = pickle.load(open(f"{args.datapath}/val_data.pkl", "rb")) | pickle.load(open(f"{args.datapath}/test_data.pkl", "rb"))
 
 class TestDataset(torch.utils.data.Dataset):
     def __init__(self, data, img_size=224):
@@ -86,10 +87,10 @@ class TestDataset(torch.utils.data.Dataset):
             if self.data[name]["components"][i]["object_id"] in child_ids:
                 namer = name.replace("'", "_")
                 try:
-                    page_image = np.asarray(Image.open(f"dataset/val/val/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
+                    page_image = np.asarray(Image.open(f"{args.datapath}//val/val/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
                 except:
                     try:
-                        page_image = np.asarray(Image.open(f"dataset/test/test/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
+                        page_image = np.asarray(Image.open(f"{args.datapath}/test/test/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
                     except:
                         page_image = np.zeros([2048, 2048, 3])
                 object_img = page_image[max(int(self.data[name]["components"][i]['bbox'][1])-50, 0):int(self.data[name]["components"][i]['bbox'][1]+self.data[name]["components"][i]['bbox'][3])+50, 
@@ -104,10 +105,10 @@ class TestDataset(torch.utils.data.Dataset):
             if self.data[name]["components"][i]["object_id"] in parent_ids:
                 namer = name.replace("'", "_")
                 try:
-                    page_image = np.asarray(Image.open(f"dataset/val/val/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
+                    page_image = np.asarray(Image.open(f"{args.datapath}/val/val/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
                 except:
                     try:
-                        page_image = np.asarray(Image.open(f"dataset/test/test/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
+                        page_image = np.asarray(Image.open(f"{args.datapath}/test/test/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
                     except:
                         page_image = np.zeros([2048, 2048, 3])
                 object_img = page_image[max(int(self.data[name]["components"][i]['bbox'][1])-50, 0):int(self.data[name]["components"][i]['bbox'][1]+self.data[name]["components"][i]['bbox'][3])+50, 
