@@ -193,7 +193,7 @@ tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
 text_model = BartModel.from_pretrained("facebook/bart-large").to(device)
 
 model = ModelFactory(image_model, text_model).to(device)
-model.load_state_dict(torch.load(f"{args.modelpath}/{args.category}.pth").state_dict())
+model.load_state_dict(torch.load(f"{args.modelpath}/{args.category}.pth", map_location=device).state_dict())
 scaler = torch.amp.GradScaler(enabled=True)
 
 gc.collect()
