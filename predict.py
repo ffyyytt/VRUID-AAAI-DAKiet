@@ -22,6 +22,7 @@ parser = argparse.ArgumentParser("VRUID")
 parser.add_argument("-category", help="YAML file", nargs='?', type=str, default="figure")
 parser.add_argument("-datapath", help="Path to dataset", nargs='?', type=str, default="/kaggle/input/aaai-25-visually-rich-document-vrd-iu-leaderboard")
 parser.add_argument("-modelpath", help="Path to dataset", nargs='?', type=str, default="/kaggle/input/vruid-aaai-dakiet/pytorch/figure/2")
+parser.add_argument("-device", help="Path to dataset", nargs='?', type=str, default="cuda")
 args = parser.parse_args()
 
 max_length = 128
@@ -185,7 +186,7 @@ class ModelFactory(torch.nn.Module):
         return logits
     
 test_dataset = torch.utils.data.DataLoader(TestDataset(test_data), batch_size=1, shuffle=False, num_workers=16)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(args.device)
 
 image_model = timm.create_model("timm/swinv2_cr_tiny_ns_224.sw_in1k", pretrained=True, num_classes=0).to(device)
 tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
