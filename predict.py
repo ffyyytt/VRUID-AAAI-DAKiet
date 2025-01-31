@@ -24,9 +24,6 @@ parser.add_argument("-datapath", help="Path to dataset", nargs='?', type=str, de
 parser.add_argument("-modelpath", help="Path to dataset", nargs='?', type=str, default="/kaggle/input/vruid-aaai-dakiet/pytorch/figure/2")
 args = parser.parse_args()
 
-if not os.path.exists(args.category):
-    os.makedirs(args.category)
-
 max_length = 128
 if args.category == "table":
     args.child_category = "table_caption" 
