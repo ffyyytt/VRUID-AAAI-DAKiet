@@ -19,7 +19,7 @@ from transformers import BartModel, BartTokenizer, RobertaTokenizer, RobertaMode
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 parser = argparse.ArgumentParser("VRUID")
-parser.add_argument("-category", help="YAML file", nargs='?', type=str, default="figure")
+parser.add_argument("-category", help="Category: [table, figure, form, list, form_body]", nargs='?', type=str, default="figure")
 args = parser.parse_args()
 
 if not os.path.exists(args.category):
