@@ -91,5 +91,5 @@ for file_id, k in enumerate(test_data.keys()):
 
 df = pd.DataFrame()
 df["ID"] = ID
-df["Parent"] = PARENT
+df["Parent"] = [int(x) for x in PARENT]
 df.to_csv("submission.csv", index=False)
