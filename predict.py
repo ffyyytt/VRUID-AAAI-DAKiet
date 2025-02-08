@@ -25,9 +25,6 @@ parser.add_argument("-modelpath", help="Path to dataset", nargs='?', type=str, d
 
 args = parser.parse_args()
 
-if not os.path.exists(args.category):
-    os.makedirs(args.category)
-
 max_length = 128
 if args.category == "table":
     args.child_category = "table_caption" 
