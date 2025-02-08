@@ -6,6 +6,8 @@ import pandas as pd
 parser = argparse.ArgumentParser("VRUID")
 parser.add_argument("-datapath", help="Path to dataset", nargs='?', type=str, default="/kaggle/input/aaai-25-visually-rich-document-vrd-iu-leaderboard")
 
+args = parser.parse_args()
+
 test, val = pickle.load(open(f"{args.datapath}/test_data.pkl", "rb")), pickle.load(open(f"{args.datapath}/val_data.pkl", "rb"))
 test_data = pickle.load(open(f"{args.datapath}/val_data.pkl", "rb")) | pickle.load(open(f"{args.datapath}/test_data.pkl", "rb"))
 figure_child_ids, figure_parent_ids, figure_predictions = pickle.load(open("output_figure.pickle", "rb"))
