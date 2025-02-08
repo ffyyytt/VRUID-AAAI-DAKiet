@@ -91,6 +91,7 @@ class TestDataset(torch.utils.data.Dataset):
                     try:
                         page_image = np.asarray(Image.open(f"{args.datapath}/test/test/{namer}_page-{self.data[name]['components'][i]['page']}.png"))
                     except:
+                        print(name)
                         page_image = np.zeros([2048, 2048, 3])
                 object_img = page_image[max(int(self.data[name]["components"][i]['bbox'][1])-50, 0):int(self.data[name]["components"][i]['bbox'][1]+self.data[name]["components"][i]['bbox'][3])+50, 
                                         max(int(self.data[name]["components"][i]['bbox'][0])-50, 0):int(self.data[name]["components"][i]['bbox'][0]+self.data[name]["components"][i]['bbox'][2])+50]
